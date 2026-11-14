@@ -1,11 +1,11 @@
 # HỆ THỐNG QUẢN LÝ TÀI SẢN CỐ ĐỊNH (HCMUNRE)
 **Đồ án môn học:** Phương pháp phát triển phần mềm hướng đối tượng (OOSD)  
-> **Trường Đại học:** Tài nguyên và Môi trường Thành phố Hồ Chí Minh (HCMUNRE)  
-> **Khoa:** Công nghệ Thông tin  
-> **Sinh viên thực hiện:** Trương Gia Phát 
-> **MSSV:** 1250080139 
-> **Lớp:** 12_ĐH_CNPM2  
-> **Giảng viên hướng dẫn:** ThS. Phạm Trọng Huynh  
+**Trường Đại học:** Tài nguyên và Môi trường Thành phố Hồ Chí Minh (HCMUNRE)  
+**Khoa:** Công nghệ Thông tin  
+**Sinh viên thực hiện:** Trương Gia Phát 
+**MSSV:** 1250080139 
+**Lớp:** 12_ĐH_CNPM2  
+**Giảng viên hướng dẫn:** ThS. Phạm Trọng Huynh  
 
 ---
 
