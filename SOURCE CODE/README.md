@@ -2,12 +2,14 @@
 > **Đồ án môn học:** Phương pháp phát triển phần mềm hướng đối tượng (OOSD)  
 > **Trường Đại học:** Tài nguyên và Môi trường Thành phố Hồ Chí Minh (HCMUNRE)  
 > **Khoa:** Công nghệ Thông tin  
-> **Sinh viên thực hiện:** Trương Gia Phát — **MSSV:** 1250080139 — **Lớp:** 12_ĐH_CNPM2  
+> **Sinh viên thực hiện:** Trương Gia Phát 
+> **MSSV:** 1250080139 
+> **Lớp:** 12_ĐH_CNPM2  
 > **Giảng viên hướng dẫn:** ThS. Phạm Trọng Huynh  
 
 ---
 
-## 📌 1. Giới thiệu tổng quan
+## 1. Giới thiệu tổng quan
 
 Hệ thống **Quản lý tài sản cố định** là giải pháp phần mềm web giúp tin học hóa và số hóa toàn diện quy trình quản lý vòng đời tài sản công tại Trường Đại học Tài nguyên và Môi trường TP.HCM. Hệ thống được xây dựng bám sát theo các quy định hiện hành của Nhà nước về quản lý tài sản công (**Thông tư 23/2023/TT-BTC** của Bộ Tài chính).
 
@@ -24,7 +26,7 @@ Hệ thống **Quản lý tài sản cố định** là giải pháp phần mề
 
 ---
 
-## 🛠️ 2. Công nghệ sử dụng
+## 2. Công nghệ sử dụng
 
 * **Ngôn ngữ lập trình:** Java 21 LTS
 * **Bộ khung ứng dụng (Framework):** Spring Boot 3.3.5
@@ -42,7 +44,7 @@ Hệ thống **Quản lý tài sản cố định** là giải pháp phần mề
 
 ---
 
-## 📋 3. Yêu cầu môi trường (Prerequisites)
+## 3. Yêu cầu môi trường (Prerequisites)
 
 Trước khi cài đặt và khởi chạy dự án, máy tính cần được cài đặt sẵn:
 
@@ -53,7 +55,7 @@ Trước khi cài đặt và khởi chạy dự án, máy tính cần được c
 
 ---
 
-## 🚀 4. Hướng dẫn cài đặt & Khởi chạy từng bước
+## 4. Hướng dẫn cài đặt & Khởi chạy từng bước
 
 ### Bước 1: Khởi tạo Cơ sở dữ liệu (Database Setup)
 1. Mở phần mềm **SQL Server Management Studio (SSMS)** và đăng nhập vào SQL Server instance của bạn (mặc định cổng `1433`).
@@ -94,12 +96,6 @@ Mở cửa sổ Terminal/PowerShell tại thư mục `quanlytaisan` và thực t
 ```bash
 # Tải dependencies và chạy ứng dụng trực tiếp bằng Maven
 mvn spring-boot:run
-```
-*(Hoặc đóng gói thành file thực thi JAR rồi chạy):*
-```bash
-mvn clean package
-java -jar target/quanlytaisan-1.0.0.jar
-```
 
 ---
 
@@ -110,7 +106,7 @@ Sau khi màn hình console hiển thị thông báo Spring Boot đã khởi đ�
 
 ---
 
-## 🔑 5. Danh sách tài khoản thử nghiệm (Test Accounts)
+## 5. Danh sách tài khoản thử nghiệm (Test Accounts)
 
 Hệ thống đã nạp sẵn dữ liệu 4 tài khoản đại diện cho 4 vai trò tác nghiệp thực tế. **Mật khẩu mặc định cho tất cả tài khoản mẫu là:** `123`
 
@@ -123,7 +119,7 @@ Hệ thống đã nạp sẵn dữ liệu 4 tài khoản đại diện cho 4 vai
 
 ---
 
-## 📁 6. Cấu trúc thư mục (Folder Structure)
+## 6. Cấu trúc thư mục (Folder Structure)
 
 ```text
 SOURCE CODE/
@@ -136,7 +132,7 @@ SOURCE CODE/
 
 ---
 
-## 🛠️ 7. Xử lý sự cố thường gặp (Troubleshooting)
+## 7. Xử lý sự cố thường gặp (Troubleshooting)
 
 1. **Lỗi "Cannot connect to SQL Server on localhost:1433":**
    * Mở ứng dụng **SQL Server Configuration Manager** trên Windows.
@@ -155,4 +151,3 @@ SOURCE CODE/
    * Vào mục **Security** -> **Logins** -> Nhấp đúp vào tài khoản `sa` -> Đặt lại mật khẩu thành `123` và bấm OK.
 
 ---
-*© 2026 — Đồ án môn học Phương pháp phát triển phần mềm hướng đối tượng - Khoa CNTT HCMUNRE.*
