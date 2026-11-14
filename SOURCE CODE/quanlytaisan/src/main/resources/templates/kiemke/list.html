@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Quản Lý Kiểm Kê Tài Sản')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Quản Lý Kiểm Kê Tài Sản Định Kỳ', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div>
+                    <span class="fw-bold text-dark">Danh Sách Các Đợt Kiểm Kê Tài Sản</span>
+                    <span class="badge bg-light text-secondary border ms-2" th:text="${#lists.size(listPhieu)} + ' đợt kiểm kê'"></span>
+                </div>
+                <!-- Nút Khởi tạo đợt kiểm kê mới mở Modal trên cùng bên phải -->
+                <button th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                        type="button" class="btn btn-sm btn-primary fw-semibold px-3" 
+                        data-bs-toggle="modal" data-bs-target="#modalKhoiTaoKiemKe">
+                    Khởi tạo đợt kiểm tra mới
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap" style="width: 120px;">Số Phiếu KK</th>
+                            <th class="text-nowrap" style="min-width: 180px;">Đợt Kiểm Kê</th>
+                            <th class="text-nowrap" style="width: 130px;">Ngày Khảo Sát</th>
+                            <th class="text-nowrap" style="min-width: 180px;">Đơn Vị Được Kiểm Kê</th>
+                            <th class="text-nowrap" style="width: 180px;">Trưởng Ban Kiểm Kê</th>
+                            <th class="text-nowrap" style="width: 160px;">Cán Bộ Chủ Trì</th>
+                            <th class="text-center text-nowrap" style="width: 120px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${listPhieu}">
+                            <td><code class="fw-bold" th:text="${p.soPhieuKK}"></code></td>
+                            <td class="fw-semibold text-dark" th:text="${p.dotKiemKe}"></td>
+                            <td class="small text-muted" th:text="${p.ngayKiemKe}"></td>
+                            <td class="fw-semibold text-dark" th:text="${p.phongBan.tenPhongBan}"></td>
+                            <td th:text="${p.truongBanKiemKe}"></td>
+                            <td th:text="${p.nvChuTri != null ? p.nvChuTri.hoTen : 'Hệ thống'}"></td>
+                            <td class="text-center text-nowrap">
+                                <!-- 1. Nút Xem chi tiết: Icon con mắt vào thẳng trang chi tiết biên bản -->
+                                <a th:href="@{'/kiemke/xem/' + ${p.soPhieuKK}}" 
+                                   class="btn btn-sm btn-outline-primary me-1" 
+                                   title="Xem chi tiết biên bản kiểm kê">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+
+                                <!-- Chỉ Admin và Quản lý tài sản được Sửa và Xóa -->
+                                <th:block th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}">
+                                    <!-- 2. Nút Sửa: Icon cây bút mở Modal chỉnh sửa -->
+                                    <button type="button" class="btn btn-sm btn-outline-warning me-1" 
+                                            data-bs-toggle="modal" th:data-bs-target="'#modalSuaKK_' + ${p.soPhieuKK}" 
+                                            title="Chỉnh sửa thông tin hành chính đợt kiểm kê">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                    <!-- 3. Nút Xóa: Icon thùng rác -->
+                                    <a th:href="@{'/kiemke/xoa/' + ${p.soPhieuKK}}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa đợt kiểm kê này? Toàn bộ danh sách số liệu đối soát đi kèm sẽ bị xóa!');" 
+                                       title="Xóa đợt kiểm kê">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </th:block>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(listPhieu)}">
+                            <td colspan="7" class="text-center text-muted py-4">Chưa có hồ sơ kiểm kê nào được lập!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal Khởi Tạo Đợt Kiểm Tra Mới (Giao diện chuẩn giống form thêm tài khoản mới) -->
+        <div class="modal fade" id="modalKhoiTaoKiemKe" tabindex="-1" aria-hidden="true"
+             th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow border-0">
+                    <form th:action="@{/kiemke/tao}" method="get">
+                        <div class="modal-header bg-white border-bottom py-3 px-4">
+                            <h5 class="modal-title fs-6 fw-bold text-dark">Khởi Tạo Đợt Kiểm Tra & Khảo Sát Mới</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Số Phiếu Kiểm Kê <span class="text-danger">*</span></label>
+                                    <input type="text" name="soPhieuKK" th:value="${phieuMoi != null ? phieuMoi.soPhieuKK : ''}" class="form-control bg-light fw-bold text-dark" readonly required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Đơn Vị Cần Kiểm Kê <span class="text-danger">*</span></label>
+                                    <select name="maPhongBan" class="form-select" required>
+                                        <option value="">-- Chọn phòng ban / đơn vị --</option>
+                                        <option th:each="pb : ${listPhongBan}" th:value="${pb.maPhongBan}" th:text="${pb.tenPhongBan}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Tên Đợt Kiểm Kê <span class="text-danger">*</span></label>
+                                    <input type="text" name="dotKiemKe" th:value="${phieuMoi != null ? phieuMoi.dotKiemKe : ''}" class="form-control" required placeholder="VD: Kiểm kê tài sản Quý 4/2026">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Ngày Khảo Sát Thực Tế <span class="text-danger">*</span></label>
+                                    <input type="date" name="ngayKiemKe" th:value="${phieuMoi != null ? phieuMoi.ngayKiemKe : ''}" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Trưởng Ban Kiểm Kê <span class="text-danger">*</span></label>
+                                    <input type="text" name="truongBanKiemKe" class="form-control" placeholder="Họ tên trưởng ban kiểm kê" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Cán Bộ Chủ Trì</label>
+                                    <input type="text" th:value="${session.currentUser != null ? session.currentUser.hoTen : 'Hệ thống'}" class="form-control bg-light text-muted" readonly>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-secondary">Ghi Chú Đợt Kiểm Kê</label>
+                                    <textarea name="ghiChuChung" class="form-control" rows="2" placeholder="Ghi chú đánh giá cơ sở vật chất, điều kiện khảo sát..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">Bắt đầu khảo sát đối soát</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các Modal Chỉnh Sửa cho từng Đợt Kiểm Kê -->
+        <th:block th:each="p : ${listPhieu}">
+            <!-- Modal Chỉnh Sửa Thông Tin Hành Chính Phiếu Kiểm Kê -->
+            <div th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                 class="modal fade" 
+                 th:id="'modalSuaKK_' + ${p.soPhieuKK}" 
+                 tabindex="-1" 
+                 aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content shadow border-0">
+                        <form th:action="@{/kiemke/capnhat}" method="post">
+                            <input type="hidden" name="soPhieuKK" th:value="${p.soPhieuKK}">
+                            <div class="modal-header bg-white border-bottom py-3 px-4">
+                                <h5 class="modal-title fs-6 fw-bold text-dark">
+                                    Chỉnh Sửa Đợt Kiểm Kê: <span class="text-primary" th:text="${p.soPhieuKK}"></span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Số Phiếu Kiểm Kê</label>
+                                        <input type="text" th:value="${p.soPhieuKK}" readonly class="form-control bg-light fw-bold text-secondary">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Đơn Vị Được Kiểm Kê</label>
+                                        <input type="text" th:value="${p.phongBan.tenPhongBan}" readonly class="form-control bg-light text-muted">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Tên Đợt Kiểm Kê <span class="text-danger">*</span></label>
+                                        <input type="text" name="dotKiemKe" class="form-control" th:value="${p.dotKiemKe}" required placeholder="VD: Kiểm kê tài sản Quý 4/2026">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Ngày Khảo Sát <span class="text-danger">*</span></label>
+                                        <input type="date" name="ngayKiemKe" class="form-control" th:value="${p.ngayKiemKe}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Trưởng Ban Kiểm Kê <span class="text-danger">*</span></label>
+                                        <input type="text" name="truongBanKiemKe" class="form-control" th:value="${p.truongBanKiemKe}" required placeholder="Họ tên trưởng ban">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Cán Bộ Chủ Trì</label>
+                                        <input type="text" th:value="${p.nvChuTri != null ? p.nvChuTri.hoTen : 'Hệ thống'}" readonly class="form-control bg-light text-muted">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold small text-secondary">Ghi Chú Chung</label>
+                                        <textarea name="ghiChuChung" class="form-control" rows="2" th:text="${p.ghiChuChung}" placeholder="Ghi chú đánh giá cơ sở vật chất, điều kiện khảo sát..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                                <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu Thay Đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Hồ Sơ Cá Nhân')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Hồ Sơ Cá Nhân', ~{::#content})}">
+    <div id="content">
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-xl-8">
+                <!-- 1. Thông Tin Tài Khoản -->
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <span class="fw-bold text-dark">Thông Tin Tài Khoản</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Mã người dùng</label>
+                                <div class="fw-semibold text-dark"><code class="text-dark fw-bold" th:text="${user.maNguoiDung}">ND_01</code></div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Tên đăng nhập</label>
+                                <div class="fw-semibold text-dark" th:text="${user.tenDangNhap}">admin</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Họ và tên</label>
+                                <div class="fw-semibold text-dark" th:text="${user.hoTen}">Quản Trị Viên</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Vai trò phân quyền</label>
+                                <div>
+                                    <span class="badge bg-white text-dark border px-2.5 py-1 fw-semibold" th:text="${user.vaiTro.tenVaiTro}">Quản trị viên</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Phòng ban / Đơn vị</label>
+                                <div class="fw-semibold text-dark" th:text="${user.phongBan != null ? user.phongBan.tenPhongBan : 'Chưa phân bổ'}">Phòng Quản trị thiết bị</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Email</label>
+                                <div class="fw-semibold text-dark" th:text="${user.email}">admin@hcmunre.edu.vn</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Số điện thoại</label>
+                                <div class="fw-semibold text-dark" th:text="${user.soDienThoai != null and !user.soDienThoai.isEmpty() ? user.soDienThoai : 'Chưa cập nhật'}">0901000001</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small mb-1 d-block">Trạng thái</label>
+                                <div>
+                                    <span class="badge badge-status-sudung" th:text="${user.trangThai}">Đang hoạt động</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Đổi Mật Khẩu (Nằm ngay bên dưới phần Thông Tin Tài Khoản) -->
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <span class="fw-bold text-dark">Đổi Mật Khẩu</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/profile/doimatkhau}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+                                    <input type="password" id="oldPassword" name="oldPassword" class="form-control" placeholder="Nhập mật khẩu hiện tại" required autocomplete="current-password">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Mật khẩu mới <span class="text-danger">*</span></label>
+                                    <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="Nhập mật khẩu mới (tối thiểu 3 ký tự)" required minlength="3" autocomplete="new-password">
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                                    Lưu mật khẩu mới
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

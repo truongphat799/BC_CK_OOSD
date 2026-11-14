@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Lập Phiếu Đền Bù')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Lập Phiếu Đền Bù Hư Hỏng Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <span class="fw-bold text-dark">Thông Tin Bồi Thường Thiệt Hại</span>
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/baotri/denbu/luu}" th:object="${phieuDenBu}" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Số Phiếu Đền Bù <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{soPhieuDB}" class="form-control" required readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Phiếu Sửa Chữa Gốc <span class="text-danger">*</span></label>
+                            <select th:field="*{phieuBaoTri.soPhieuBT}" class="form-select" required>
+                                <option value="">-- Chọn phiếu sửa chữa --</option>
+                                <option th:each="bt : ${listPhieuBT}" th:value="${bt.soPhieuBT}" th:text="${bt.soPhieuBT} + ' (Chi phí: ' + ${bt.tongChiPhi} + ' đ)'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Cá Nhân Chịu Bồi Thường <span class="text-danger">*</span></label>
+                            <select th:field="*{nvBoiThuong.maNguoiDung}" class="form-select" required>
+                                <option value="">-- Chọn nhân sự bồi thường --</option>
+                                <option th:each="nv : ${listNhanVien}" th:value="${nv.maNguoiDung}" th:text="${nv.hoTen} + ' (' + ${nv.phongBan.tenPhongBan} + ')'"></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Số Tiền Bồi Thường (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" step="1000" th:field="*{soTienDenBu}" class="form-control" placeholder="1000000" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Hình Thức Xử Lý</label>
+                            <select th:field="*{hinhThucXuLy}" class="form-select">
+                                <option value="Khấu trừ lương">Khấu trừ lương</option>
+                                <option value="Nộp tiền mặt trực tiếp">Nộp tiền mặt trực tiếp</option>
+                                <option value="Chuyển khoản tài khoản trường">Chuyển khoản tài khoản trường</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Hạn Chót Bồi Thường <span class="text-danger">*</span></label>
+                            <input type="date" th:field="*{hanChotBoiThuong}" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold small text-secondary">Lý Do Đền Bù <span class="text-danger">*</span></label>
+                            <textarea th:field="*{lyDoDenBu}" class="form-control" rows="2" placeholder="VD: Bất cẩn làm đổ nước vào máy chiếu / Kéo giật đứt dây nguồn..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
+                        <a th:href="@{/baotri/denbu}" class="btn btn-outline-secondary px-4">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu biên bản đền bù</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

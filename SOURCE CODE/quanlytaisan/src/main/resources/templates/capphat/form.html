@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Lập Phiếu Cấp Phát')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Lập Phiếu Cấp Phát Tài Sản', ~{::#content})}">
+    <div id="content">
+        <form th:action="@{/capphat/luu}" th:object="${phieu}" method="post">
+            <div class="row">
+                <!-- Master Info -->
+                <div class="col-lg-5">
+                    <div class="card shadow-sm border mb-4">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <span class="fw-bold text-dark">Thông Tin Chứng Từ Cấp Phát</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Số Phiếu Cấp Phát <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{soPhieuCP}" class="form-control" required readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Ngày Bàn Giao Cấp Phát <span class="text-danger">*</span></label>
+                                <input type="date" th:field="*{ngayCapPhat}" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Phòng Ban Tiếp Nhận <span class="text-danger">*</span></label>
+                                <select th:field="*{phongBanNhan.maPhongBan}" class="form-select" required>
+                                    <option value="">-- Chọn đơn vị tiếp nhận --</option>
+                                    <option th:each="pb : ${listPhongBan}" th:value="${pb.maPhongBan}" th:text="${pb.tenPhongBan}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Người Nhận Đại Diện <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{nguoiNhanDaiDien}" class="form-control" placeholder="Họ tên Trưởng đơn vị / Đại diện tiếp nhận" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Vị Trí Lắp Đặt Mới</label>
+                                <input type="text" name="viTriMoi" class="form-control" placeholder="VD: Bàn 01, Phòng Lab 302" value="Văn phòng bộ môn">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Lý Do Cấp Phát <span class="text-danger">*</span></label>
+                                <textarea th:field="*{lyDoCapPhat}" class="form-control" rows="2" placeholder="VD: Trang bị thiết bị phục vụ công tác giảng dạy kỳ 1" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Ghi Chú</label>
+                                <textarea th:field="*{ghiChu}" class="form-control" rows="1" placeholder="Ghi chú thêm..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Selection -->
+                <div class="col-lg-7">
+                    <div class="card shadow-sm border mb-4">
+                        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">Chọn Tài Sản Trong Kho Để Cấp Phát</span>
+                            <span class="badge bg-light text-secondary border" th:text="${#lists.size(listTaiSanTrongKho)} + ' tài sản trong kho'"></span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th style="width: 40px;" class="text-center">#</th>
+                                            <th>Mã TS</th>
+                                            <th>Tên Tài Sản</th>
+                                            <th>Loại</th>
+                                            <th class="text-end">Nguyên Giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="ts : ${listTaiSanTrongKho}">
+                                            <td class="text-center">
+                                                <input class="form-check-input" type="checkbox" name="maTaiSanList" th:value="${ts.maTaiSan}">
+                                            </td>
+                                            <td><code class="fw-bold" th:text="${ts.maTaiSan}"></code></td>
+                                            <td>
+                                                <span class="fw-semibold text-dark" th:text="${ts.tenTaiSan}"></span>
+                                                <br><small class="text-muted" th:text="${ts.nhaCungCap.tenNCC}"></small>
+                                            </td>
+                                            <td><span class="badge bg-white text-dark border px-2 py-1 fw-semibold" th:text="${ts.loaiTaiSan.tenLoai}"></span></td>
+                                            <td class="text-end fw-semibold text-dark" th:text="${#numbers.formatDecimal(ts.nguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(listTaiSanTrongKho)}">
+                                            <td colspan="5" class="text-center text-muted py-4">Hiện không có tài sản nào đang ở trạng thái 'Trong kho'! Vui lòng tiếp nhận tài sản mới trước.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light border-top p-3 d-flex justify-content-end gap-2">
+                            <a th:href="@{/capphat}" class="btn btn-outline-secondary px-4 fw-medium">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold" th:disabled="${#lists.isEmpty(listTaiSanTrongKho)}">
+                                Xác nhận cấp phát & Bàn giao
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

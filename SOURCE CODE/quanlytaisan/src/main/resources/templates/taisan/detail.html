@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Chi Tiết Tài Sản')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Hồ Sơ Chi Tiết Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <!-- Card Header với Tên tài sản, Trạng thái & Nút Quay lại -->
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold fs-5 text-dark" th:text="${taiSan.tenTaiSan}"></span>
+                    <span class="badge" th:classappend="${taiSan.tinhTrang == 'Trong kho' ? 'badge-status-trongkho' : (taiSan.tinhTrang == 'Đang sử dụng' ? 'badge-status-sudung' : (taiSan.tinhTrang == 'Đang bảo trì' ? 'badge-status-baotri' : 'badge-status-thanhly'))}" th:text="${taiSan.tinhTrang}"></span>
+                </div>
+                <a th:href="@{/taisan}" class="btn btn-outline-secondary px-3 fw-medium">
+                    Quay lại
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- 1. Thông Tin Cơ Bản Của Tài Sản -->
+                <h6 class="fw-bold mb-3 text-secondary">Thông Tin Cơ Bản</h6>
+                <div class="row g-3">
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Mã tài sản:</label>
+                        <span class="fw-bold fs-5 text-dark" th:text="${taiSan.maTaiSan}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Loại tài sản:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.loaiTaiSan.tenLoai}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Đơn vị sử dụng hiện tại:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.phongBan != null ? taiSan.phongBan.tenPhongBan : 'Kho tài sản trung tâm'}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Vị trí lắp đặt:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.viTri != null and taiSan.viTri != '' ? taiSan.viTri : 'Chưa thiết lập'}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Nhà cung cấp:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.nhaCungCap.tenNCC}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Số hóa đơn / Năm SX:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.soHoaDon} + ' / Năm ' + ${taiSan.namSanXuat}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Ngày tiếp nhận:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.ngayTiepNhan}"></span>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label class="text-muted small d-block">Đơn vị tính:</label>
+                        <span class="fw-semibold text-dark" th:text="${taiSan.donViTinh}"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- 2. Giá Trị & Khấu Hao Tài Sản -->
+                <h6 class="fw-bold mb-3 text-secondary">Giá Trị & Khấu Hao Tài Sản</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded text-center border">
+                            <small class="text-muted d-block mb-1">Nguyên Giá Ban Đầu</small>
+                            <span class="fs-5 fw-bold text-dark" th:text="${#numbers.formatDecimal(taiSan.nguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded text-center border">
+                            <small class="text-muted d-block mb-1">Tỷ Lệ Khấu Hao</small>
+                            <span class="fs-5 fw-bold text-dark" th:text="${taiSan.loaiTaiSan.tyLeKhauHao} + '% / năm'"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded text-center border">
+                            <small class="text-muted d-block mb-1">Giá Trị Tính Toán Hiện Tại</small>
+                            <span class="fs-5 fw-bold text-dark" th:text="${#numbers.formatDecimal(giaTriHaoMon, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- 2 nút nghiệp vụ nằm dưới cùng bên phải -->
+                <div class="d-flex justify-content-end gap-2">
+                    <a th:href="@{/baotri/yeucau}" class="btn btn-outline-warning fw-semibold px-3">
+                        Báo hỏng / Yêu cầu bảo trì
+                    </a>
+                    <!-- Chỉ Quản trị viên và Quản lý tài sản mới được quyền lập đề xuất thanh lý (Ẩn với Ban Lãnh đạo và Đơn vị sử dụng) -->
+                    <a th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                       th:href="@{/thanhly/tao}" class="btn btn-outline-danger fw-semibold px-3">
+                        Đề xuất thanh lý
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

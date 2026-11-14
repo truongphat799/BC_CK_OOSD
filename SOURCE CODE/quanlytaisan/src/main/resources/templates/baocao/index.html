@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Báo Cáo & Thống Kê')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Báo Cáo Tổng Hợp & Thống Kê Hao Mòn Tài Sản', ~{::#content})}">
+    <div id="content">
+        <!-- Actions & Title bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold mb-1 text-dark">Báo Cáo Tổng Kết Tài Sản Cố Định</h5>
+                <small class="text-muted">Dữ liệu kết xuất từ cơ sở dữ liệu thời gian thực</small>
+            </div>
+            <a th:href="@{/baocao/xuat-excel}" class="btn btn-sm btn-outline-success fw-semibold px-3">
+                Xuất Excel
+            </a>
+        </div>
+
+        <!-- Phân Bổ Tài Sản Theo Phòng Ban / Khoa Đào Tạo -->
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <span class="fw-bold text-dark">1. Phân Bổ Tài Sản Theo Phòng Ban / Khoa Đào Tạo</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center text-nowrap" style="width: 60px;">STT</th>
+                            <th class="text-nowrap" style="min-width: 250px;">Tên Phòng Ban / Đơn Vị</th>
+                            <th class="text-center text-nowrap" style="width: 160px;">Số Lượng Tài Sản</th>
+                            <th class="text-end text-nowrap" style="width: 240px;">Tổng Nguyên Giá Đầu Tư</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row, iter : ${phongBanStats}">
+                            <td class="text-center" th:text="${iter.count}">1</td>
+                            <td class="fw-semibold text-dark" th:text="${row.tenPhongBan}"></td>
+                            <td class="text-center fw-bold" th:text="${row.soLuong}">0</td>
+                            <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(row.tongGiaTri, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="2" class="text-end text-dark">Tổng cộng toàn đơn vị:</td>
+                            <td class="text-center text-dark fs-6" th:text="${tongSoTaiSan}">0</td>
+                            <td class="text-end text-dark fs-6" th:text="${#numbers.formatDecimal(tongNguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bảng Tính Khấu Hao & Giá Trị Còn Lại Chi Tiết -->
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <span class="fw-bold text-dark">2. Bảng Tính Khấu Hao & Giá Trị Còn Lại Chi Tiết</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap" style="width: 110px;">Mã TS</th>
+                            <th class="text-nowrap" style="min-width: 200px;">Tên Tài Sản</th>
+                            <th class="text-nowrap" style="width: 130px;">Ngày Nhận</th>
+                            <th class="text-center text-nowrap" style="width: 120px;">Tỷ Lệ KH</th>
+                            <th class="text-end text-nowrap" style="width: 160px;">Nguyên Giá</th>
+                            <th class="text-end text-nowrap" style="width: 160px;">Đã Khấu Hao</th>
+                            <th class="text-end text-nowrap" style="width: 160px;">Giá Trị Hiện Tại</th>
+                            <th class="text-nowrap" style="width: 140px;">Tình Trạng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${khauHaoList}">
+                            <td><code class="fw-bold" th:text="${item.taiSan.maTaiSan}"></code></td>
+                            <td><strong th:text="${item.taiSan.tenTaiSan}"></strong></td>
+                            <td th:text="${item.taiSan.ngayTiepNhan}"></td>
+                            <td class="text-center fw-semibold text-dark" th:text="${item.taiSan.loaiTaiSan.tyLeKhauHao} + '%'"></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(item.taiSan.nguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td class="text-end fw-semibold text-dark" th:text="${#numbers.formatDecimal(item.daKhauHao, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td class="text-end fw-bold text-dark" th:text="${#numbers.formatDecimal(item.giaTriHienTai, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td>
+                                <span class="badge" th:classappend="${item.taiSan.tinhTrang == 'Trong kho' ? 'badge-status-trongkho' : (item.taiSan.tinhTrang == 'Đang sử dụng' ? 'badge-status-sudung' : (item.taiSan.tinhTrang == 'Đã thanh lý' ? 'badge-status-thanhly' : 'badge-status-baotri'))}" th:text="${item.taiSan.tinhTrang}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

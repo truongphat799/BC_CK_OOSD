@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Hồ Sơ Thanh Lý Tài Sản')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Hồ Sơ Thanh Lý Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">QUYẾT ĐỊNH & HỒ SƠ THANH LÝ TÀI SẢN</h5>
+                    <span class="text-muted">Mã hồ sơ: <code th:text="${phieu.soPhieuTL}"></code> | Ngày lập: <span th:text="${phieu.ngayThanhLy}"></span></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <th:block th:if="${phieu.trangThaiDuyet == 'Chờ phê duyệt' and (session.currentUser.vaiTro.maVaiTro == 'VT_LANHDAO' or session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN')}">
+                        <form th:action="@{'/thanhly/duyet/' + ${phieu.soPhieuTL}}" method="post" class="d-inline">
+                            <input type="hidden" name="dongY" value="true">
+                            <button type="submit" class="btn btn-success fw-semibold px-3" onclick="return confirm('Xác nhận: Ban Lãnh đạo đồng ý phê duyệt thanh lý hồ sơ này?');">
+                                Phê duyệt
+                            </button>
+                        </form>
+                        <form th:action="@{'/thanhly/duyet/' + ${phieu.soPhieuTL}}" method="post" class="d-inline">
+                            <input type="hidden" name="dongY" value="false">
+                            <button type="submit" class="btn btn-outline-danger fw-semibold px-3" onclick="return confirm('Xác nhận: Từ chối hồ sơ thanh lý này?');">
+                                Từ chối
+                            </button>
+                        </form>
+                    </th:block>
+                    <button class="btn btn-outline-secondary" onclick="window.print()">In quyết định</button>
+                    <a th:href="@{/thanhly}" class="btn btn-outline-secondary">Quay lại</a>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <span class="text-secondary small d-block fw-semibold">Phương thức thanh lý:</span>
+                    <strong class="fs-6 text-dark" th:text="${phieu.phuongThucThanhLy}"></strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-secondary small d-block fw-semibold">Người lập hồ sơ:</span>
+                    <strong class="fs-6 text-dark" th:text="${phieu.nvLap.hoTen}"></strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-secondary small d-block fw-semibold">Cán bộ phê duyệt:</span>
+                    <strong class="fs-6 text-dark" th:text="${phieu.nvDuyet != null ? phieu.nvDuyet.hoTen : 'Chưa duyệt'}"></strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-secondary small d-block fw-semibold">Trạng thái phê duyệt:</span>
+                    <span class="badge py-2 px-3" 
+                          th:classappend="${phieu.trangThaiDuyet == 'Đã phê duyệt' ? 'badge-status-sudung' : (phieu.trangThaiDuyet == 'Bị từ chối' ? 'badge-status-thanhly' : 'badge-status-baotri')}" 
+                          th:text="${phieu.trangThaiDuyet}"></span>
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-3">Chi Tiết Danh Mục Tài Sản Thanh Lý</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 50px;">STT</th>
+                            <th>Mã Tài Sản</th>
+                            <th>Tên Tài Sản</th>
+                            <th class="text-end">Nguyên Giá</th>
+                            <th class="text-end">Giá Trị Còn Lại</th>
+                            <th class="text-end">Thu Hồi</th>
+                            <th>Lý Do</th>
+                            <th>Hình Thức Xử Lý</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ct, iter : ${chiTietList}">
+                            <td class="text-center" th:text="${iter.count}">1</td>
+                            <td><code th:text="${ct.taiSan.maTaiSan}"></code></td>
+                            <td class="fw-semibold text-dark" th:text="${ct.taiSan.tenTaiSan}"></td>
+                            <td class="text-end text-dark" th:text="${#numbers.formatDecimal(ct.nguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td class="text-end text-muted" th:text="${#numbers.formatDecimal(ct.giaTriConLai, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td class="text-end fw-bold text-dark" th:text="${#numbers.formatDecimal(ct.giaTriThuHoi, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td class="small" th:text="${ct.lyDoThanhLy}"></td>
+                            <td class="small" th:text="${ct.hinhThucXuLy}"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light fw-bold text-dark">
+                        <tr>
+                            <td colspan="3" class="text-end">Tổng cộng:</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(phieu.tongNguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(phieu.tongGiaTriThuHoi, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="row text-center mt-5">
+                <div class="col-6">
+                    <strong class="d-block mb-5 text-dark">NGƯỜI LẬP HỒ SƠ</strong>
+                    <span class="fw-semibold text-dark" th:text="${phieu.nvLap.hoTen}"></span>
+                </div>
+                <div class="col-6">
+                    <strong class="d-block mb-5 text-dark">BAN LÃNH ĐẠO PHÊ DUYỆT</strong>
+                    <span class="fw-semibold text-dark" th:text="${phieu.nvDuyet != null ? phieu.nvDuyet.hoTen : '(Chờ phê duyệt)'}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

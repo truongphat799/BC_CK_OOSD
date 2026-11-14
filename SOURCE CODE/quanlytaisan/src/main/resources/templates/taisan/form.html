@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Tiếp Nhận Tài Sản Mới')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Tiếp Nhận / Cập Nhật Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold text-dark fs-6" th:text="${isEdit ? 'Chỉnh Sửa Thông Tin Tài Sản: ' + taiSan.maTaiSan : 'Tiếp Nhận Tài Sản Cố Định Mới'}"></span>
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/taisan/luu}" th:object="${taiSan}" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Mã Tài Sản <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{maTaiSan}" th:readonly="${isEdit}" class="form-control" th:classappend="${isEdit ? 'bg-light fw-bold text-secondary' : ''}" placeholder="VD: TS_PC05" required>
+                            <div th:if="${isEdit}" class="form-text text-muted small">Mã tài sản cố định không được thay đổi</div>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small text-secondary">Tên Tài Sản <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{tenTaiSan}" class="form-control" placeholder="VD: Máy tính để bàn Dell OptiPlex 7090" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Phân Loại Tài Sản <span class="text-danger">*</span></label>
+                            <select th:field="*{loaiTaiSan.maLoai}" class="form-select" required>
+                                <option value="">-- Chọn loại tài sản --</option>
+                                <option th:each="l : ${listLoai}" th:value="${l.maLoai}" th:text="${l.tenLoai} + ' (' + ${l.tyLeKhauHao} + '%/năm)'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Nhà Cung Cấp <span class="text-danger">*</span></label>
+                            <select th:field="*{nhaCungCap.maNCC}" class="form-select" required>
+                                <option value="">-- Chọn nhà cung cấp --</option>
+                                <option th:each="ncc : ${listNCC}" th:value="${ncc.maNCC}" th:text="${ncc.tenNCC}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Phòng Ban Quản Lý</label>
+                            <select th:field="*{phongBan.maPhongBan}" class="form-select">
+                                <option value="">-- Kho tài sản trung tâm --</option>
+                                <option th:each="pb : ${listPhongBan}" th:value="${pb.maPhongBan}" th:text="${pb.tenPhongBan}"></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Nguyên Giá (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" step="1000" th:field="*{nguyenGia}" class="form-control" placeholder="20000000" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold small text-secondary">Đơn Vị Tính</label>
+                            <input type="text" th:field="*{donViTinh}" class="form-control" placeholder="Cái / Bộ" value="Cái">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small text-secondary">Số Hóa Đơn Mua <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{soHoaDon}" class="form-control" placeholder="HD-2026-001" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small text-secondary">Năm Sản Xuất <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{namSanXuat}" class="form-control" placeholder="2025" value="2025" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Ngày Tiếp Nhận</label>
+                            <input type="date" th:field="*{ngayTiepNhan}" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Tình Trạng</label>
+                            <select th:field="*{tinhTrang}" class="form-select">
+                                <option value="Trong kho">Trong kho</option>
+                                <option value="Đang sử dụng">Đang sử dụng</option>
+                                <option value="Đang bảo trì">Đang bảo trì</option>
+                                <option value="Chờ thanh lý">Chờ thanh lý</option>
+                                <option value="Đã thanh lý">Đã thanh lý</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Vị Trí Cụ Thể</label>
+                            <input type="text" th:field="*{viTri}" class="form-control" placeholder="Kệ A2, Kho trung tâm / Lab 302">
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
+                        <a th:href="@{/taisan}" class="btn btn-outline-secondary px-4 fw-medium">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold" th:text="${isEdit ? 'Lưu cập nhật' : 'Lưu tài sản'}"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

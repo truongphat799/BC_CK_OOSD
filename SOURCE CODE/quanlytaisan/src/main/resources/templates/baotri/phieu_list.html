@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Quản Lý Phiếu Bảo Trì')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Quản Lý Bảo Trì & Sửa Chữa Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div>
+                    <span class="fw-bold text-dark">Danh Sách Phiếu Sửa Chữa & Bảo Trì</span>
+                    <span class="badge bg-light text-secondary border ms-2" th:text="${#lists.size(listPhieu)} + ' phiếu'"></span>
+                </div>
+                <!-- Nút lập phiếu sửa chữa mới mở Modal trên cùng bên phải -->
+                <button th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                        type="button" class="btn btn-sm btn-primary fw-semibold px-3" 
+                        data-bs-toggle="modal" data-bs-target="#modalLapPhieuBaoTri">
+                    Lập phiếu sửa chữa mới
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap" style="width: 120px;">Số Phiếu</th>
+                            <th class="text-nowrap" style="min-width: 190px;">Tài Sản</th>
+                            <th class="text-nowrap" style="width: 130px;">Ngày Lập</th>
+                            <th class="text-nowrap" style="width: 180px;">Đơn Vị Sửa Chữa</th>
+                            <th class="text-end text-nowrap" style="width: 140px;">Chi Phí (VNĐ)</th>
+                            <th class="text-nowrap" style="width: 140px;">Kết Quả Xử Lý</th>
+                            <th class="text-nowrap" style="width: 140px;">Ngày Hoàn Thành</th>
+                            <th class="text-center text-nowrap" style="width: 120px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${listPhieu}">
+                            <td><code class="fw-bold" th:text="${p.soPhieuBT}"></code></td>
+                            <td>
+                                <th:block th:if="${!#lists.isEmpty(p.chiTietList)}">
+                                    <strong class="text-dark" th:text="${p.chiTietList[0].taiSan.tenTaiSan}"></strong>
+                                    <br><small class="text-muted"><code th:text="${p.chiTietList[0].taiSan.maTaiSan}"></code></small>
+                                </th:block>
+                                <span th:if="${#lists.isEmpty(p.chiTietList)}" class="text-muted fst-italic">Chưa có chi tiết</span>
+                            </td>
+                            <td class="small text-muted" th:text="${p.ngayLap}"></td>
+                            <td class="fw-semibold text-dark" th:text="${p.donViSuaChua}"></td>
+                            <td class="text-end fw-semibold text-dark" th:text="${#numbers.formatDecimal(p.tongChiPhi, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${p.ketQuaXuLy == 'Đạt yêu cầu' ? 'badge-status-sudung' : (p.ketQuaXuLy == 'Không thể phục hồi' ? 'badge-status-thanhly' : 'badge-status-baotri')}" 
+                                      th:text="${p.ketQuaXuLy}"></span>
+                            </td>
+                            <td class="small text-muted" th:text="${p.ngayHoanThanh != null ? p.ngayHoanThanh : 'Đang sửa chữa'}"></td>
+                            <td class="text-center text-nowrap">
+                                <!-- 1. Nút Chi tiết: Icon con mắt (màu blue) -->
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                                        data-bs-toggle="modal" th:data-bs-target="'#modalChiTietBT_' + ${p.soPhieuBT}" 
+                                        title="Xem chi tiết phiếu sửa chữa">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+
+                                <!-- 2. Nút Sửa: chỉ sửa khi Đang sửa chữa -->
+                                <button type="button" class="btn btn-sm btn-outline-warning me-1" 
+                                        th:if="${p.ketQuaXuLy == 'Đang sửa chữa' and (session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS')}"
+                                        data-bs-toggle="modal" th:data-bs-target="'#modalSuaBT_' + ${p.soPhieuBT}" 
+                                        title="Chỉnh sửa phiếu bảo trì">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
+                                        th:unless="${p.ketQuaXuLy == 'Đang sửa chữa' and (session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS')}" 
+                                        title="Không thể sửa khi phiếu đã nghiệm thu hoàn thành hoặc không có quyền" disabled>
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+
+                                <!-- 3. Nút Xóa: chỉ xóa khi Đang sửa chữa -->
+                                <a th:if="${p.ketQuaXuLy == 'Đang sửa chữa' and (session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS')}" 
+                                   th:href="@{'/baotri/phieu/xoa/' + ${p.soPhieuBT}}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('CẢNH BÁO NGHIỆP VỤ: Bạn có chắc chắn muốn hủy phiếu bảo trì này? Tình trạng tài sản sẽ được hoàn nguyên về Đang sử dụng.');" 
+                                   title="Hủy phiếu bảo trì & hoàn tác tài sản">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        th:unless="${p.ketQuaXuLy == 'Đang sửa chữa' and (session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS')}" 
+                                        title="Không thể xóa khi phiếu đã nghiệm thu hoàn thành hoặc không có quyền" disabled>
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(listPhieu)}">
+                            <td colspan="8" class="text-center text-muted py-4">Chưa có phiếu sửa chữa bảo trì nào!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal Lập Phiếu Sửa Chữa Mới (Form giống trang Quản Lý Tài Khoản & Phân Quyền) -->
+        <div class="modal fade" id="modalLapPhieuBaoTri" tabindex="-1" aria-hidden="true"
+             th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow border-0">
+                    <form th:action="@{/baotri/phieu/luu}" th:object="${phieuMoi}" method="post">
+                        <div class="modal-header bg-white border-bottom py-3 px-4">
+                            <h5 class="modal-title fs-6 fw-bold text-dark">Lập Phiếu Sửa Chữa & Bảo Trì Mới</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Số Phiếu Bảo Trì <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{soPhieuBT}" class="form-control bg-light fw-bold text-dark" required readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Ngày Lập Phiếu <span class="text-danger">*</span></label>
+                                    <input type="date" th:field="*{ngayLap}" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Liên Kết Yêu Cầu Báo Hỏng</label>
+                                    <select th:field="*{yeuCauBaoTri.maYeuCau}" id="selectYeuCauModal" class="form-select">
+                                        <option value="">-- Không liên kết yêu cầu --</option>
+                                        <option th:each="y : ${listYeuCauCho}" 
+                                                th:value="${y.maYeuCau}" 
+                                                th:data-ma-tai-san="${y.taiSan != null ? y.taiSan.maTaiSan : ''}"
+                                                th:data-mo-ta="${y.moTaSuCo}"
+                                                th:text="${y.maYeuCau} + ' - ' + (${y.taiSan != null ? y.taiSan.tenTaiSan : ''})"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Chọn Tài Sản Sửa Chữa <span class="text-danger">*</span></label>
+                                    <select name="maTaiSan" id="selectTaiSanModal" class="form-select" required>
+                                        <option value="">-- Chọn tài sản cần bảo trì --</option>
+                                        <option th:each="ts : ${listTaiSan}" 
+                                                th:value="${ts.maTaiSan}" 
+                                                th:selected="${ts.maTaiSan == defaultMaTaiSan or (phieuMoi.yeuCauBaoTri != null and phieuMoi.yeuCauBaoTri.taiSan != null and phieuMoi.yeuCauBaoTri.taiSan.maTaiSan == ts.maTaiSan)}"
+                                                th:text="${ts.maTaiSan} + ' - ' + ${ts.tenTaiSan} + ' (' + ${ts.tinhTrang} + ')'"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Đơn Vị Kỹ Thuật / Sửa Chữa <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{donViSuaChua}" class="form-control" placeholder="VD: Trung tâm kỹ thuật / Dell Care" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Chi Phí Sửa Chữa Dự Kiến (VNĐ) <span class="text-danger">*</span></label>
+                                    <input type="number" step="1000" min="0" name="chiPhi" class="form-control fw-bold text-dark" placeholder="VD: 1500000" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Hiện Trạng Hư Hỏng Khảo Sát <span class="text-danger">*</span></label>
+                                    <textarea name="hienTrangHuHong" id="textareaHuHongModal" class="form-control" rows="2" placeholder="Hỏng nguồn, vỡ màn hình..." required th:text="${defaultHienTrang != null and !defaultHienTrang.isEmpty() ? defaultHienTrang : (phieuMoi.yeuCauBaoTri != null ? phieuMoi.yeuCauBaoTri.moTaSuCo : '')}"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Nội Dung Sửa Chữa / Thay Thế <span class="text-danger">*</span></label>
+                                    <textarea name="noiDungSuaChua" class="form-control" rows="2" placeholder="Thay nguồn mới, vệ sinh linh kiện..." required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu phiếu bảo trì</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các Modal Xem Chi Tiết & Chỉnh Sửa cho từng Phiếu Bảo Trì -->
+        <th:block th:each="p : ${listPhieu}">
+            <!-- Modal Xem Chi Tiết Phiếu Bảo Trì (Thiết kế form đồng bộ chuẩn) -->
+            <div class="modal fade" th:id="'modalChiTietBT_' + ${p.soPhieuBT}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow border-0">
+                        <div class="modal-header bg-white border-bottom py-3 px-4">
+                            <h5 class="modal-title fs-6 fw-bold text-dark">
+                                Hồ Sơ Chi Tiết Phiếu Bảo Trì: <span class="text-primary" th:text="${p.soPhieuBT}"></span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Số Phiếu Bảo Trì</label>
+                                    <input type="text" class="form-control bg-light fw-bold text-dark" th:value="${p.soPhieuBT}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Ngày Lập Phiếu</label>
+                                    <input type="text" class="form-control bg-light text-dark" th:value="${p.ngayLap}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Cán Bộ Lập Phiếu</label>
+                                    <input type="text" class="form-control bg-light text-dark" th:value="${p.nvLap != null ? p.nvLap.hoTen : 'Hệ thống'}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Đơn Vị Thực Hiện Sửa Chữa</label>
+                                    <input type="text" class="form-control bg-light text-dark" th:value="${p.donViSuaChua}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Tổng Chi Phí Sửa Chữa</label>
+                                    <input type="text" class="form-control bg-light fw-bold text-dark" th:value="${#numbers.formatDecimal(p.tongChiPhi, 0, 'COMMA', 0, 'POINT')} + ' đ'" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Kết Quả Xử Lý</label>
+                                    <input type="text" class="form-control bg-light fw-semibold text-dark" th:value="${p.ketQuaXuLy + (p.ngayHoanThanh != null ? ' (Hoàn thành: ' + p.ngayHoanThanh + ')' : '')}" readonly>
+                                </div>
+
+                                <!-- Yêu cầu báo hỏng liên kết nếu có -->
+                                <div class="col-12" th:if="${p.yeuCauBaoTri != null}">
+                                    <div class="p-3 bg-light rounded border small">
+                                        <div class="fw-semibold text-dark mb-1">Liên kết Yêu cầu báo hỏng: <code class="text-dark fw-bold" th:text="${p.yeuCauBaoTri.maYeuCau}"></code></div>
+                                        <div class="text-muted">Người báo: <strong class="text-dark" th:text="${p.yeuCauBaoTri.nvGui.hoTen}"></strong> | Sự cố: <span th:text="${p.yeuCauBaoTri.moTaSuCo}"></span></div>
+                                    </div>
+                                </div>
+
+                                <!-- Chi tiết tài sản & Hạng mục sửa chữa -->
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-secondary d-block">Chi Tiết Hạng Mục Sửa Chữa & Linh Kiện</label>
+                                    <div class="table-responsive border rounded">
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Tài Sản</th>
+                                                    <th>Hiện Trạng Hư Hỏng</th>
+                                                    <th>Nội Dung Khắc Phục</th>
+                                                    <th class="text-end">Chi Phí</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="ct : ${p.chiTietList}">
+                                                    <td>
+                                                        <strong class="text-dark" th:text="${ct.taiSan.tenTaiSan}"></strong>
+                                                        <br><small class="text-muted"><code th:text="${ct.taiSan.maTaiSan}"></code></small>
+                                                        <br><small class="text-muted" th:text="'Vị trí: ' + ${ct.taiSan.viTri}"></small>
+                                                    </td>
+                                                    <td class="small text-dark" th:text="${ct.hienTrangHuHong}"></td>
+                                                    <td class="small text-dark" th:text="${ct.noiDungSuaChua}"></td>
+                                                    <td class="text-end fw-semibold text-dark" th:text="${#numbers.formatDecimal(ct.chiPhi, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                                </tr>
+                                                <tr th:if="${#lists.isEmpty(p.chiTietList)}">
+                                                    <td colspan="4" class="text-center text-muted py-2">Chưa có chi tiết tài sản!</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer: Nút Đóng và các nút hành động nghiệm thu / đền bù -->
+                        <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-between align-items-center">
+                            <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Đóng</button>
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- Khi phiếu Đang sửa chữa: Nghiệm thu Đạt hoặc Hư hỏng -->
+                                <th:block th:if="${p.ketQuaXuLy == 'Đang sửa chữa' and (session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS')}">
+                                    <form th:action="@{/baotri/phieu/hoanthanh}" method="post" class="d-inline">
+                                        <input type="hidden" name="soPhieuBT" th:value="${p.soPhieuBT}">
+                                        <input type="hidden" name="ketQuaXuLy" value="Đạt yêu cầu">
+                                        <button type="submit" class="btn btn-sm btn-success fw-semibold px-3" onclick="return confirm('Xác nhận nghiệm thu: Tài sản sửa chữa ĐẠT YÊU CẦU và đưa vào sử dụng lại?');">
+                                            Nghiệm thu Đạt
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/baotri/phieu/hoanthanh}" method="post" class="d-inline">
+                                        <input type="hidden" name="soPhieuBT" th:value="${p.soPhieuBT}">
+                                        <input type="hidden" name="ketQuaXuLy" value="Không thể phục hồi">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold px-3" onclick="return confirm('CẢNH BÁO: Xác nhận tài sản HƯ HỎNG KHÔNG THỂ PHỤC HỒI và chuyển sang chờ thanh lý?');">
+                                            Hư hỏng
+                                        </button>
+                                    </form>
+                                </th:block>
+
+                                <!-- Khi phiếu Đã nghiệm thu xong -->
+                                <th:block th:if="${p.ketQuaXuLy != 'Đang sửa chữa'}">
+                                    <a th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                                       th:href="@{'/baotri/denbu?soPhieuBT=' + ${p.soPhieuBT}}" 
+                                       class="btn btn-sm btn-outline-warning text-dark fw-semibold px-3" 
+                                       title="Lập phiếu đền bù đối với hư hỏng do lỗi người dùng">
+                                        Lập phiếu đền bù
+                                    </a>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Chỉnh Sửa Phiếu Bảo Trì (chỉ khi Đang sửa chữa) -->
+            <div class="modal fade" th:id="'modalSuaBT_' + ${p.soPhieuBT}" tabindex="-1" aria-hidden="true"
+                 th:if="${p.ketQuaXuLy == 'Đang sửa chữa' and (session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS')}">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow border-0">
+                        <form th:action="@{/baotri/phieu/sua}" method="post">
+                            <input type="hidden" name="soPhieuBT" th:value="${p.soPhieuBT}">
+                            <div class="modal-header bg-white border-bottom py-3 px-4">
+                                <h5 class="modal-title fs-6 fw-bold text-dark">
+                                    Chỉnh Sửa Phiếu Bảo Trì: <span class="text-primary" th:text="${p.soPhieuBT}"></span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Số Phiếu Bảo Trì</label>
+                                        <input type="text" th:value="${p.soPhieuBT}" readonly class="form-control bg-light fw-bold text-secondary">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Tài Sản Đang Sửa Chữa</label>
+                                        <input type="text" th:value="${!#lists.isEmpty(p.chiTietList) ? p.chiTietList[0].taiSan.tenTaiSan + ' (' + p.chiTietList[0].taiSan.maTaiSan + ')' : ''}" readonly class="form-control bg-light text-muted">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Ngày Lập Phiếu <span class="text-danger">*</span></label>
+                                        <input type="date" name="ngayLap" th:value="${p.ngayLap}" required class="form-control">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Đơn Vị Thực Hiện Sửa Chữa <span class="text-danger">*</span></label>
+                                        <input type="text" name="donViSuaChua" th:value="${p.donViSuaChua}" required class="form-control" placeholder="Tên công ty hoặc phòng kỹ thuật">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Tổng Chi Phí Sửa Chữa (VNĐ) <span class="text-danger">*</span></label>
+                                        <input type="number" step="1000" min="0" name="chiPhi" th:value="${p.tongChiPhi}" required class="form-control fw-bold text-dark">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Hiện Trạng Hư Hỏng Chi Tiết</label>
+                                        <input type="text" name="hienTrangHuHong" class="form-control" th:value="${!#lists.isEmpty(p.chiTietList) ? p.chiTietList[0].hienTrangHuHong : ''}" placeholder="Mô tả hiện trạng hư hỏng">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold small text-secondary">Nội Dung Biện Pháp Sửa Chữa</label>
+                                        <textarea name="noiDungSuaChua" class="form-control" rows="2" th:text="${!#lists.isEmpty(p.chiTietList) ? p.chiTietList[0].noiDungSuaChua : ''}" placeholder="Mô tả nội dung công việc sửa chữa/thay thế linh kiện"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                                <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu Thay Đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- Script tự động mở Modal nếu được chuyển từ trang Danh sách Yêu cầu bảo trì -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var selectYeuCau = document.getElementById('selectYeuCauModal');
+                var selectTaiSan = document.getElementById('selectTaiSanModal');
+                var textareaHuHong = document.getElementById('textareaHuHongModal');
+
+                if (selectYeuCau) {
+                    selectYeuCau.addEventListener('change', function() {
+                        var selectedOpt = this.options[this.selectedIndex];
+                        if (selectedOpt && selectedOpt.value) {
+                            var maTS = selectedOpt.getAttribute('data-ma-tai-san');
+                            var moTa = selectedOpt.getAttribute('data-mo-ta');
+                            if (maTS && selectTaiSan) {
+                                selectTaiSan.value = maTS;
+                            }
+                            if (moTa && textareaHuHong) {
+                                textareaHuHong.value = moTa;
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+        <script th:if="${openModal}">
+            document.addEventListener("DOMContentLoaded", function() {
+                var modalElem = document.getElementById('modalLapPhieuBaoTri');
+                if (modalElem) {
+                    var myModal = new bootstrap.Modal(modalElem);
+                    myModal.show();
+                }
+            });
+        </script>
+
+    </div>
+</div>
+</body>
+</html>
