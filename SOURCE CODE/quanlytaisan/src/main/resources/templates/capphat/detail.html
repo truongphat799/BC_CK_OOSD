@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Biên Bản Cấp Phát Tài Sản')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Biên Bản Cấp Phát Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <div>
+                    <h5 class="fw-bold text-uppercase mb-1 text-dark">BIÊN BẢN BÀN GIAO & CẤP PHÁT TÀI SẢN</h5>
+                    <span class="text-muted">Số phiếu: <strong class="text-dark" th:text="${phieu.soPhieuCP}"></strong></span>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary me-2 fw-medium" onclick="window.print()">In biên bản</button>
+                    <a th:href="@{/capphat}" class="btn btn-outline-secondary px-3 fw-medium">Quay lại</a>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <span class="text-muted small d-block">Đơn vị tiếp nhận:</span>
+                    <strong class="fs-6 text-dark" th:text="${phieu.phongBanNhan.tenPhongBan}"></strong>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-muted small d-block">Người nhận đại diện:</span>
+                    <strong class="fs-6 text-dark" th:text="${phieu.nguoiNhanDaiDien}"></strong>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-muted small d-block">Ngày cấp phát:</span>
+                    <strong class="fs-6 text-dark" th:text="${phieu.ngayCapPhat}"></strong>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-muted small d-block">Người lập chứng từ:</span>
+                    <span class="fw-semibold text-dark" th:text="${phieu.nvLap.hoTen}"></span>
+                </div>
+                <div class="col-md-8">
+                    <span class="text-muted small d-block">Lý do bàn giao:</span>
+                    <span class="fst-italic text-dark" th:text="${phieu.lyDoCapPhat}"></span>
+                </div>
+            </div>
+
+            <h6 class="fw-bold mb-3 text-secondary">Danh Sách Tài Sản Bàn Giao</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 50px;">STT</th>
+                            <th>Mã Tài Sản</th>
+                            <th>Tên Tài Sản</th>
+                            <th>Đơn Vị Tính</th>
+                            <th>Tình Trạng Khi Giao</th>
+                            <th>Vị Trí Lắp Đặt Mới</th>
+                            <th class="text-end">Nguyên Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ct, iter : ${chiTietList}">
+                            <td class="text-center" th:text="${iter.count}">1</td>
+                            <td><code th:text="${ct.taiSan.maTaiSan}"></code></td>
+                            <td class="fw-semibold text-dark" th:text="${ct.taiSan.tenTaiSan}"></td>
+                            <td class="text-center" th:text="${ct.taiSan.donViTinh}"></td>
+                            <td th:text="${ct.tinhTrangBanGiao}"></td>
+                            <td th:text="${ct.viTriMoi}"></td>
+                            <td class="text-end fw-semibold text-dark" th:text="${#numbers.formatDecimal(ct.taiSan.nguyenGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row text-center mt-5">
+                <div class="col-6">
+                    <strong class="d-block mb-5">ĐẠI DIỆN BÊN GIAO (KHO TÀI SẢN)</strong>
+                    <span class="fw-semibold text-dark" th:text="${phieu.nvLap.hoTen}"></span>
+                </div>
+                <div class="col-6">
+                    <strong class="d-block mb-5">ĐẠI DIỆN BÊN NHẬN (PHÒNG BAN)</strong>
+                    <span class="fw-semibold text-dark" th:text="${phieu.nguoiNhanDaiDien}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

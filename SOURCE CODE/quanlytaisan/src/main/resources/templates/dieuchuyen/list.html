@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Quản Lý Điều Chuyển Tài Sản')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Quản Lý Điều Chuyển Tài Sản', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div>
+                    <span class="fw-bold text-dark">Danh Sách Phiếu Điều Chuyển Nội Bộ</span>
+                    <span class="badge bg-light text-secondary border ms-2" th:text="${#lists.size(listPhieu)} + ' phiếu'"></span>
+                </div>
+                <!-- Nút Lập Phiếu Điều Chuyển: Mở Modal trực tiếp -->
+                <button th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                        type="button" 
+                        class="btn btn-sm btn-primary fw-semibold px-3" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalThemDieuChuyen">
+                    Lập phiếu điều chuyển
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap" style="width: 120px;">Số Phiếu</th>
+                            <th class="text-nowrap" style="width: 140px;">Ngày Điều Chuyển</th>
+                            <th class="text-nowrap" style="width: 190px;">Đơn Vị Chuyển Đi</th>
+                            <th class="text-nowrap" style="width: 170px;">Người Lập</th>
+                            <th class="text-nowrap">Lý Do Điều Chuyển</th>
+                            <th class="text-center text-nowrap" style="width: 120px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${listPhieu}">
+                            <td><code class="fw-bold" th:text="${p.soPhieuDC}"></code></td>
+                            <td th:text="${p.ngayDieuChuyen}"></td>
+                            <td><span class="fw-semibold text-dark" th:text="${p.phongBanChuyen.tenPhongBan}"></span></td>
+                            <td th:text="${p.nvLap.hoTen}"></td>
+                            <td class="small text-muted" th:text="${p.lyDoDieuChuyen}"></td>
+                            <td class="text-center text-nowrap">
+                                <!-- Xem chi tiết: Icon con mắt vào thẳng trang chi tiết biên bản -->
+                                <a th:href="@{'/dieuchuyen/xem/' + ${p.soPhieuDC}}" 
+                                   class="btn btn-sm btn-outline-primary me-1" 
+                                   title="Xem chi tiết phiếu điều chuyển">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+
+                                <!-- Chỉ Admin và Quản lý tài sản được Sửa và Xóa phiếu -->
+                                <th:block th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}">
+                                    <!-- Nút Sửa: mở modal chỉnh sửa thông tin hành chính -->
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-warning me-1" 
+                                            data-bs-toggle="modal" 
+                                            th:data-bs-target="'#modalEditDC_' + ${p.soPhieuDC}" 
+                                            title="Chỉnh sửa thông tin hành chính phiếu điều chuyển">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <!-- Nút Xóa/Hủy phiếu: tự động hoàn tác tài sản về phòng ban chuyển ban đầu -->
+                                    <a th:href="@{'/dieuchuyen/xoa/' + ${p.soPhieuDC}}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('CẢNH BÁO NGHIỆP VỤ: Bạn có chắc chắn muốn hủy phiếu điều chuyển này? Toàn bộ tài sản trong phiếu sẽ được tự động hoàn tác về phòng ban ban đầu!');" 
+                                       title="Hủy phiếu điều chuyển & hoàn tác tài sản về phòng ban chuyển">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </th:block>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(listPhieu)}">
+                            <td colspan="6" class="text-center text-muted py-4">Chưa có phiếu điều chuyển nào được lập!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 1. Modal Lập Phiếu Điều Chuyển Mới (Giao diện chuẩn giống form thêm tài khoản mới) -->
+        <div class="modal fade" id="modalThemDieuChuyen" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow border-0">
+                    <form th:action="@{/dieuchuyen/luu}" method="post">
+                        <div class="modal-header bg-white border-bottom py-3 px-4">
+                            <h5 class="modal-title fs-6 fw-bold text-dark">Lập Phiếu Điều Chuyển Tài Sản</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Số Phiếu Điều Chuyển <span class="text-danger">*</span></label>
+                                    <input type="text" name="soPhieuDC" th:value="${phieuMoi != null ? phieuMoi.soPhieuDC : 'PDC123456'}" class="form-control bg-light fw-bold text-secondary" readonly required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Ngày Điều Chuyển <span class="text-danger">*</span></label>
+                                    <input type="date" name="ngayDieuChuyen" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Đơn Vị Chuyển Đi <span class="text-danger">*</span></label>
+                                    <select name="phongBanChuyen.maPhongBan" class="form-select" required>
+                                        <option value="">-- Chọn đơn vị chuyển đi --</option>
+                                        <option th:each="pb : ${listPhongBan}" th:value="${pb.maPhongBan}" th:text="${pb.tenPhongBan}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Đơn Vị Tiếp Nhận Mới <span class="text-danger">*</span></label>
+                                    <select name="maPhongBanNhanMoi" class="form-select" required>
+                                        <option value="">-- Chọn đơn vị tiếp nhận mới --</option>
+                                        <option th:each="pb : ${listPhongBan}" th:value="${pb.maPhongBan}" th:text="${pb.tenPhongBan}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Vị Trí Lắp Đặt Mới</label>
+                                    <input type="text" name="viTriMoi" class="form-control" placeholder="VD: Phòng họp số 2 Tòa B" value="Phòng mới">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Lý Do Điều Chuyển <span class="text-danger">*</span></label>
+                                    <input type="text" name="lyDoDieuChuyen" class="form-control" placeholder="VD: Bổ sung máy móc cho phòng hội thảo" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-secondary">Ghi Chú</label>
+                                    <textarea name="ghiChu" class="form-control" rows="1" placeholder="Ghi chú thêm..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-secondary">Chọn Tài Sản Đang Sử Dụng Để Điều Chuyển <span class="text-danger">*</span></label>
+                                    <div class="border rounded p-2" style="max-height: 220px; overflow-y: auto;">
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead class="table-light sticky-top">
+                                                <tr>
+                                                    <th style="width: 40px;" class="text-center">#</th>
+                                                    <th>Mã TS</th>
+                                                    <th>Tên Tài Sản</th>
+                                                    <th>Đang Ở Phòng Ban</th>
+                                                    <th>Vị Trí</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="ts : ${listTaiSanDangDung}">
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="checkbox" name="maTaiSanList" th:value="${ts.maTaiSan}">
+                                                    </td>
+                                                    <td><code th:text="${ts.maTaiSan}"></code></td>
+                                                    <td class="fw-semibold text-dark" th:text="${ts.tenTaiSan}"></td>
+                                                    <td><span class="badge bg-white text-dark border px-2 py-0.5" th:text="${ts.phongBan != null ? ts.phongBan.tenPhongBan : 'Kho'}"></span></td>
+                                                    <td class="small text-muted" th:text="${ts.viTri}"></td>
+                                                </tr>
+                                                <tr th:if="${#lists.isEmpty(listTaiSanDangDung)}">
+                                                    <td colspan="5" class="text-center text-muted py-3">Hiện không có tài sản nào đang ở trạng thái 'Đang sử dụng'!</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-text text-muted small">Tích chọn các tài sản muốn điều chuyển sang đơn vị mới</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold" th:disabled="${#lists.isEmpty(listTaiSanDangDung)}">Xác nhận điều chuyển</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Modal Chỉnh Sửa Thông Tin Hành Chính Phiếu Điều Chuyển -->
+        <th:block th:each="p : ${listPhieu}">
+            <!-- Modal Chỉnh Sửa Thông Tin Hành Chính Phiếu Điều Chuyển -->
+            <div th:if="${session.currentUser.vaiTro.maVaiTro == 'VT_ADMIN' or session.currentUser.vaiTro.maVaiTro == 'VT_QLTS'}" 
+                 class="modal fade" 
+                 th:id="'modalEditDC_' + ${p.soPhieuDC}" 
+                 tabindex="-1" 
+                 aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content shadow border-0">
+                        <form th:action="@{/dieuchuyen/capnhat}" method="post">
+                            <input type="hidden" name="soPhieuDC" th:value="${p.soPhieuDC}">
+                            <div class="modal-header bg-white border-bottom py-3 px-4">
+                                <h5 class="modal-title fs-6 fw-bold text-dark">
+                                    Chỉnh Sửa Phiếu Điều Chuyển: <span th:text="${p.soPhieuDC}"></span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Số Phiếu Điều Chuyển</label>
+                                        <input type="text" th:value="${p.soPhieuDC}" readonly class="form-control bg-light fw-bold text-secondary">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Đơn Vị Chuyển Đi</label>
+                                        <input type="text" th:value="${p.phongBanChuyen.tenPhongBan}" readonly class="form-control bg-light text-muted">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Ngày Điều Chuyển <span class="text-danger">*</span></label>
+                                        <input type="date" name="ngayDieuChuyen" th:value="${p.ngayDieuChuyen}" required class="form-control">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Lý Do Điều Chuyển <span class="text-danger">*</span></label>
+                                        <input type="text" name="lyDoDieuChuyen" class="form-control" th:value="${p.lyDoDieuChuyen}" required placeholder="Lý do điều chuyển tài sản">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold small text-secondary">Ghi Chú</label>
+                                        <textarea name="ghiChu" class="form-control" rows="2" th:text="${p.ghiChu}" placeholder="Ghi chú thêm nếu có"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                                <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu Thay Đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+                </div>
+            </div>
+        </th:block>
+    </div>
+</div>
+</body>
+</html>

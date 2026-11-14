@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Lập Phiếu Bảo Trì')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Lập Phiếu Bảo Trì & Sửa Chữa', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <span class="fw-bold text-dark">Thông Tin Phiếu Sửa Chữa</span>
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/baotri/phieu/luu}" th:object="${phieu}" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Số Phiếu Bảo Trì <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{soPhieuBT}" class="form-control" required readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Ngày Tiếp Nhận Lập Phiếu <span class="text-danger">*</span></label>
+                            <input type="date" th:field="*{ngayLap}" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Liên Kết Yêu Cầu Báo Hỏng (Nếu có)</label>
+                            <select th:field="*{yeuCauBaoTri.maYeuCau}" id="selectYeuCau" class="form-select">
+                                <option value="">-- Không liên kết --</option>
+                                <option th:each="y : ${listYeuCauCho}" 
+                                        th:value="${y.maYeuCau}" 
+                                        th:data-ma-tai-san="${y.taiSan != null ? y.taiSan.maTaiSan : ''}"
+                                        th:data-mo-ta="${y.moTaSuCo}"
+                                        th:text="${y.maYeuCau} + ' - ' + (${y.taiSan != null ? y.taiSan.tenTaiSan : ''})"></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Đơn Vị Kỹ Thuật / Sửa Chữa <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{donViSuaChua}" class="form-control" placeholder="VD: Trung tâm bảo hành Dell Care / Tổ kỹ thuật nhà trường" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Chọn Tài Sản Sửa Chữa <span class="text-danger">*</span></label>
+                            <select name="maTaiSan" id="selectTaiSan" class="form-select" required>
+                                <option value="">-- Chọn tài sản --</option>
+                                <option th:each="ts : ${listTaiSan}" 
+                                        th:value="${ts.maTaiSan}" 
+                                        th:selected="${ts.maTaiSan == defaultMaTaiSan or (phieu.yeuCauBaoTri != null and phieu.yeuCauBaoTri.taiSan != null and phieu.yeuCauBaoTri.taiSan.maTaiSan == ts.maTaiSan)}"
+                                        th:text="${ts.maTaiSan} + ' - ' + ${ts.tenTaiSan} + ' (' + ${ts.tinhTrang} + ')'"></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Hiện Trạng Hư Hỏng Khảo Sát <span class="text-danger">*</span></label>
+                            <textarea name="hienTrangHuHong" id="textareaHuHong" class="form-control" rows="2" placeholder="Hỏng bộ nguồn, vỡ màn hình..." required th:text="${defaultHienTrang != null and !defaultHienTrang.isEmpty() ? defaultHienTrang : (phieu.yeuCauBaoTri != null ? phieu.yeuCauBaoTri.moTaSuCo : '')}"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Nội Dung Sửa Chữa / Thay Thế <span class="text-danger">*</span></label>
+                            <textarea name="noiDungSuaChua" class="form-control" rows="2" placeholder="Thay mới nguồn 500W chính hãng..." required></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Chi Phí Sửa Chữa Dự Kiến (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" step="1000" name="chiPhi" class="form-control" placeholder="1500000" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
+                        <a th:href="@{/baotri/phieu}" class="btn btn-outline-secondary px-4">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu phiếu bảo trì</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var selectYeuCau = document.getElementById('selectYeuCau');
+    var selectTaiSan = document.getElementById('selectTaiSan');
+    var textareaHuHong = document.getElementById('textareaHuHong');
+
+    function applySelectedRequestData() {
+        if (!selectYeuCau) return;
+        var selectedOpt = selectYeuCau.options[selectYeuCau.selectedIndex];
+        if (selectedOpt && selectedOpt.value) {
+            var maTS = selectedOpt.getAttribute('data-ma-tai-san');
+            var moTa = selectedOpt.getAttribute('data-mo-ta');
+            if (maTS && selectTaiSan && (!selectTaiSan.value || selectTaiSan.value === '')) {
+                selectTaiSan.value = maTS;
+            }
+            if (moTa && textareaHuHong && (!textareaHuHong.value || textareaHuHong.value.trim() === '')) {
+                textareaHuHong.value = moTa;
+            }
+        }
+    }
+
+    if (selectYeuCau) {
+        selectYeuCau.addEventListener('change', function() {
+            var selectedOpt = this.options[this.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                var maTS = selectedOpt.getAttribute('data-ma-tai-san');
+                var moTa = selectedOpt.getAttribute('data-mo-ta');
+                if (maTS && selectTaiSan) {
+                    selectTaiSan.value = maTS;
+                }
+                if (moTa && textareaHuHong) {
+                    textareaHuHong.value = moTa;
+                }
+            }
+        });
+        applySelectedRequestData();
+    }
+});
+</script>
+</body>
+</html>

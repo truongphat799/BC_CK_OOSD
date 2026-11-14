@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/main :: html_head('Quản Lý Phòng Ban')}"></head>
+<body>
+<div th:replace="~{layout/main :: wrapper('Danh Mục Phòng Ban / Đơn Vị', ~{::#content})}">
+    <div id="content">
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div>
+                    <span class="fw-bold text-dark">Danh Sách Phòng Ban / Đơn Vị Sử Dụng</span>
+                    <span class="badge bg-light text-secondary border ms-2" th:text="${#lists.size(listPhongBan)} + ' đơn vị'"></span>
+                </div>
+                <!-- Nút Thêm phòng ban mới mở Modal -->
+                <button type="button" class="btn btn-sm btn-primary fw-semibold px-3" data-bs-toggle="modal" data-bs-target="#modalThemPB">
+                    Thêm Phòng Ban Mới
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap" style="width: 140px;">Mã PB</th>
+                            <th class="text-nowrap" style="min-width: 200px;">Tên Phòng Ban / Đơn Vị</th>
+                            <th class="text-nowrap" style="min-width: 180px;">Địa Điểm / Tòa Nhà</th>
+                            <th class="text-nowrap" style="width: 160px;">Số Điện Thoại</th>
+                            <th class="text-center text-nowrap" style="width: 110px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pb : ${listPhongBan}">
+                            <td><code class="fw-bold" th:text="${pb.maPhongBan}"></code></td>
+                            <td class="fw-semibold text-dark" th:text="${pb.tenPhongBan}"></td>
+                            <td th:text="${pb.diaDiem != null and pb.diaDiem != '' ? pb.diaDiem : 'Chưa cập nhật'}"></td>
+                            <td th:text="${pb.sdtLienHe != null and pb.sdtLienHe != '' ? pb.sdtLienHe : 'Chưa cập nhật'}"></td>
+                            <td class="text-center text-nowrap">
+                                <!-- Nút Sửa mở modal chỉnh sửa -->
+                                <button type="button" class="btn btn-sm btn-outline-warning me-1" 
+                                        data-bs-toggle="modal" th:data-bs-target="'#modalSuaPB_' + ${pb.maPhongBan}" 
+                                        title="Chỉnh sửa thông tin phòng ban">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <!-- Nút Xóa có xác nhận -->
+                                <a th:href="@{'/danhmuc/phongban/xoa/' + ${pb.maPhongBan}}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa phòng ban này? Hành động này sẽ bị chặn nếu phòng ban đang quản lý tài sản hoặc có nhân sự trực thuộc.');" 
+                                   title="Xóa phòng ban">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(listPhongBan)}">
+                            <td colspan="5" class="text-center text-muted py-4">Chưa có phòng ban nào trong hệ thống!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal Thêm Phòng Ban Mới -->
+        <div class="modal fade" id="modalThemPB" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow border-0">
+                    <form th:action="@{/danhmuc/phongban/luu}" method="post">
+                        <div class="modal-header bg-white border-bottom py-3 px-4">
+                            <h5 class="modal-title fs-6 fw-bold text-dark">Thêm Phòng Ban Mới</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Mã Phòng Ban <span class="text-danger">*</span></label>
+                                    <input type="text" name="maPhongBan" class="form-control" placeholder="VD: PB_CNTT" required>
+                                    <div class="form-text text-muted small">Mã phòng ban là mã định danh duy nhất (Primary Key).</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Tên Phòng Ban <span class="text-danger">*</span></label>
+                                    <input type="text" name="tenPhongBan" class="form-control" placeholder="VD: Khoa Công nghệ Thông tin" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Địa Điểm / Tòa Nhà</label>
+                                    <input type="text" name="diaDiem" class="form-control" placeholder="VD: Lầu 3 Tòa B">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Số Điện Thoại Liên Hệ</label>
+                                    <input type="text" name="sdtLienHe" class="form-control" placeholder="VD: 02838443002">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu phòng ban</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các Modal Chỉnh Sửa Phòng Ban -->
+        <th:block th:each="pb : ${listPhongBan}">
+            <div class="modal fade" th:id="'modalSuaPB_' + ${pb.maPhongBan}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content shadow border-0">
+                        <form th:action="@{/danhmuc/phongban/luu}" method="post">
+                            <div class="modal-header bg-white border-bottom py-3 px-4">
+                                <h5 class="modal-title fs-6 fw-bold text-dark">
+                                    Chỉnh Sửa Phòng Ban: <span class="text-primary" th:text="${pb.maPhongBan}"></span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Mã Phòng Ban</label>
+                                        <input type="text" name="maPhongBan" class="form-control bg-light" th:value="${pb.maPhongBan}" readonly>
+                                        <div class="form-text text-muted small">Mã định danh không thể thay đổi để đảm bảo tính toàn vẹn dữ liệu.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Tên Phòng Ban <span class="text-danger">*</span></label>
+                                        <input type="text" name="tenPhongBan" class="form-control" th:value="${pb.tenPhongBan}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Địa Điểm / Tòa Nhà</label>
+                                        <input type="text" name="diaDiem" class="form-control" th:value="${pb.diaDiem}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold small text-secondary">Số Điện Thoại Liên Hệ</label>
+                                        <input type="text" name="sdtLienHe" class="form-control" th:value="${pb.sdtLienHe}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Hủy Bỏ</button>
+                                <button type="submit" class="btn btn-primary px-4 fw-semibold">Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+    </div>
+</div>
+</body>
+</html>
